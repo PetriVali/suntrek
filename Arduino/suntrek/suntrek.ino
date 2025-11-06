@@ -2,13 +2,19 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include "DHT.h"
 
-#define LDR_TOP 2
-#define LDR_BOTTOM 4
+#define DHTPIN 14    
+#define DHTTYPE DHT11
+
+#define LDR_TOP 36
+#define LDR_BOTTOM 39
 #define LDR_RIGHT 35
 #define LDR_LEFT 34
 #define SERVO_X_PIN 12
 #define SERVO_Y_PIN 13
+
+DHT dht(DHTPIN, DHTTYPE);
 
 const char* ssid = "Dan_DIGI";
 const char* password = "ioana2010";
@@ -49,11 +55,15 @@ void ldrTracking() {
   servoX.write(posX);
   servoY.write(posY);
 
-  Serial.print("TrackingLDR X:");
-  Serial.print(posX);
-  Serial.print(" Y:");
-  Serial.print(posY);
-  Serial.println(" ");
+  // Serial.print("TrackingLDR X:");
+  // Serial.print(posX);
+  // Serial.print(" Y:");
+  // Serial.print(posY);
+  // Serial.println(" ");
+  Serial.print("TOP="); Serial.print(top);
+Serial.print("  BOTTOM="); Serial.print(bottom);
+Serial.print("  LEFT="); Serial.print(left);
+Serial.print("  RIGHT="); Serial.println(right);
 }
 
 void apiTracking() {
@@ -80,7 +90,6 @@ void apiTracking() {
         servoX.write(90);
         servoY.write(0);
         Serial.println("E noapte - sistem în idle.");
-        Serial.println(altitude);
       } else {
         int servoXpos = map((int)azimuth, 60, 300, 0, 180);
         int servoYpos = map((int)altitude, 0, 90, 0, 180);
@@ -104,21 +113,30 @@ void setup() {
   servoX.attach(SERVO_X_PIN);
   servoY.attach(SERVO_Y_PIN);
   WiFi.begin(ssid, password);
+  dht.begin();
   Serial.print("Conectare la WiFi...");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+   while (WiFi.status() != WL_CONNECTED) {
+     delay(500);
+     Serial.print(".");
+   }
   Serial.println("\nConectat!");
 }
 
 void loop() {
- int lightLevel = analogRead(LDR_TOP) + analogRead(LDR_BOTTOM) +analogRead(LDR_LEFT) + analogRead(LDR_RIGHT);
+  int lightLevel = analogRead(LDR_TOP) + analogRead(LDR_BOTTOM) +analogRead(LDR_LEFT) + analogRead(LDR_RIGHT);
+  int temp=dht.readTemperature();
 
-   if (lightLevel / 4 > 200) 
-     ldrTracking();
-   else
-     apiTracking();
-
-   delay(500);
+   if(temp<=28)
+   {
+    if (lightLevel / 4 > 200) 
+      ldrTracking();
+    else
+      apiTracking();
+   }
+   else if(temp>28)
+   {
+    servoX.write(90);
+    servoY.write(0);
+   }
+delay(500);
 }
