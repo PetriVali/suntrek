@@ -7,17 +7,26 @@ export const Navbar = () => {
     element?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className="flex items-center gap-2 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+          aria-label="Scroll to top"
+        >
           <div className="w-10 h-10 rounded-full bg-gradient-solar flex items-center justify-center shadow-glow">
             <Sun className="w-6 h-6 text-primary-foreground" />
           </div>
           <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
             HelioSense
           </span>
-        </div>
+        </button>
 
         <div className="hidden md:flex items-center gap-6">
           <button
