@@ -16,8 +16,8 @@
 
 DHT dht(DHTPIN, DHTTYPE);
 
-const char* ssid = "Dan_DIGI";
-const char* password = "ioana2010";
+const char* ssid = "A54 Paul";
+const char* password = "12345678";
 const String apiKey = "afcc69eb884541ada3006585a0876815";
 
 Servo servoX;
