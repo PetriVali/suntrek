@@ -158,7 +158,7 @@
       const fixedTimeStep = 1 / 60;
       const maxFrameTime = 0.1;
       const pipeDespawnX = -pipeWidth;
-      const millisecondsPerSecond = 1000;
+      const millisecondsToSeconds = 1000;
 
       let pipes = [];
       let running = false;
@@ -229,7 +229,7 @@
       function endGame() {
         gameOver = true;
         overlayTitle.textContent = "Game Over";
-        overlayMessage.textContent = "Tap or press Space to try again.";
+        overlayMessage.textContent = "Tap, press Space, or press R to try again.";
         playButton.textContent = "Restart";
         overlay.classList.add("show");
       }
@@ -353,7 +353,7 @@
         if (!lastTime) {
           lastTime = timestamp;
         }
-        const frameTime = Math.min((timestamp - lastTime) / millisecondsPerSecond, maxFrameTime);
+        const frameTime = Math.min((timestamp - lastTime) / millisecondsToSeconds, maxFrameTime);
         lastTime = timestamp;
 
         if (running) {
