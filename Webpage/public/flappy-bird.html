@@ -155,6 +155,9 @@
       const pipeSpeed = 144;
       const groundHeight = 80;
       const groundTileWidth = 40;
+      const fixedTimeStep = 1 / 60;
+      const maxFrameTime = 0.1;
+      const pipeDespawnX = -pipeWidth;
 
       let pipes = [];
       let running = false;
@@ -162,11 +165,12 @@
       let score = 0;
       let bestScore = 0;
       let lastTime = 0;
+      let accumulator = 0;
       let groundOffset = 0;
 
       function loadBestScore() {
         try {
-          return Number.parseInt(localStorage.getItem("flappyBest") || "0", 10);
+          return Number(localStorage.getItem("flappyBest")) || 0;
         } catch {
           return 0;
         }
@@ -189,6 +193,8 @@
         bird.y = canvas.height * 0.5;
         bird.velocity = 0;
         score = 0;
+        accumulator = 0;
+        lastTime = 0;
         pipes = [
           createPipe(canvas.width + 40),
           createPipe(canvas.width + 40 + pipeSpacing),
@@ -254,7 +260,7 @@
           }
         });
 
-        if (pipes.length && pipes[0].x + pipeWidth < 0) {
+        if (pipes.length && pipes[0].x < pipeDespawnX) {
           pipes.shift();
           const lastX = pipes[pipes.length - 1].x;
           pipes.push(createPipe(lastX + pipeSpacing));
@@ -345,11 +351,15 @@
         if (!lastTime) {
           lastTime = timestamp;
         }
-        const deltaSeconds = Math.min((timestamp - lastTime) / 1000, 0.05);
+        const frameTime = Math.min((timestamp - lastTime) / 1000, maxFrameTime);
         lastTime = timestamp;
 
         if (running) {
-          update(deltaSeconds);
+          accumulator += frameTime;
+          while (accumulator >= fixedTimeStep) {
+            update(fixedTimeStep);
+            accumulator -= fixedTimeStep;
+          }
         }
         draw();
         requestAnimationFrame(loop);
