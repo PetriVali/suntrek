@@ -147,22 +147,32 @@
         velocity: 0,
       };
 
-      const gravity = 0.45;
-      const flapStrength = -7.2;
+      const gravity = 1620;
+      const flapStrength = -420;
       const pipeWidth = 62;
       const pipeGap = 150;
       const pipeSpacing = 200;
-      const pipeSpeed = 2.4;
+      const pipeSpeed = 144;
       const groundHeight = 80;
+      const groundTileWidth = 40;
 
       let pipes = [];
       let running = false;
       let gameOver = false;
       let score = 0;
-      let bestScore = Number.parseInt(localStorage.getItem("flappyBest") || "0", 10);
+      let bestScore = 0;
       let lastTime = 0;
       let groundOffset = 0;
 
+      function loadBestScore() {
+        try {
+          return Number.parseInt(localStorage.getItem("flappyBest") || "0", 10);
+        } catch {
+          return 0;
+        }
+      }
+
+      bestScore = loadBestScore();
       bestEl.textContent = bestScore.toString();
 
       function randomGapY() {
@@ -193,7 +203,11 @@
         if (score > bestScore) {
           bestScore = score;
           bestEl.textContent = bestScore.toString();
-          localStorage.setItem("flappyBest", bestScore.toString());
+          try {
+            localStorage.setItem("flappyBest", bestScore.toString());
+          } catch {
+            // Ignore storage errors.
+          }
         }
       }
 
@@ -225,14 +239,14 @@
         bird.velocity = flapStrength;
       }
 
-      function update(delta) {
+      function update(deltaSeconds) {
         if (gameOver) return;
-        bird.velocity += gravity * delta;
-        bird.y += bird.velocity * delta;
-        groundOffset = (groundOffset + pipeSpeed * delta) % 40;
+        bird.velocity += gravity * deltaSeconds;
+        bird.y += bird.velocity * deltaSeconds;
+        groundOffset = (groundOffset + pipeSpeed * deltaSeconds) % groundTileWidth;
 
         pipes.forEach((pipe) => {
-          pipe.x -= pipeSpeed * delta;
+          pipe.x -= pipeSpeed * deltaSeconds;
           if (!pipe.scored && pipe.x + pipeWidth < bird.x - bird.radius) {
             pipe.scored = true;
             score += 1;
@@ -295,7 +309,7 @@
         ctx.fillStyle = "#ffcf6b";
         ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
         ctx.fillStyle = "#e2a94f";
-        for (let x = -40 + groundOffset; x < canvas.width; x += 40) {
+        for (let x = -groundTileWidth + groundOffset; x < canvas.width; x += groundTileWidth) {
           ctx.fillRect(x, canvas.height - groundHeight + 10, 30, 12);
         }
       }
@@ -328,11 +342,14 @@
       }
 
       function loop(timestamp) {
-        const delta = Math.min((timestamp - lastTime) / 16.67, 3) || 1;
+        if (!lastTime) {
+          lastTime = timestamp;
+        }
+        const deltaSeconds = Math.min((timestamp - lastTime) / 1000, 0.05);
         lastTime = timestamp;
 
         if (running) {
-          update(delta);
+          update(deltaSeconds);
         }
         draw();
         requestAnimationFrame(loop);
